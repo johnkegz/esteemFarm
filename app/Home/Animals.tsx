@@ -1,8 +1,9 @@
 import { ThemedText } from '@/components/ThemedText';
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, FlatList, ActivityIndicator, Text } from 'react-native';
 import { TextInput, IconButton, Checkbox, Menu } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { useFetchData } from '@/hooks/useFetchData';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -21,6 +22,10 @@ export default function TabOneScreen() {
   const [hasMore, setHasMore] = useState<boolean>(true);
 
   const navigation = useNavigation();
+
+  const { data: fetchedData, isLoading: fetchDataLoading, isError } = useFetchData('http://127.0.0.1:8000/animals/');
+
+  console.log("fetchedData ----------------->", fetchedData?.results || [], fetchDataLoading, isError);
 
   useEffect(() => {
     fetchData(page);
@@ -72,6 +77,26 @@ export default function TabOneScreen() {
     navigation.navigate('DetailScreen', { itemId });
   };
 
+  const navigateToEditAnimal = (itemId: string) => {
+    navigation.navigate('EditScreen', { itemId });
+  };
+
+  const navigateToMilk = (itemId: string) =>{
+    navigation.navigate('MilkScreen', { itemId });
+  }
+
+  const navigateToList = (itemId: string) =>{
+    navigation.navigate('MilkList', { itemId });
+  }
+
+  const navigateToTreatmentScreen = (itemId: string) =>{
+    navigation.navigate('TreatmentScreen', { itemId });
+  }
+
+  const navigateToWeightList = () =>{
+    navigation.navigate('WeightList');
+  }
+
   return (
     <View style={styles.container}>
       {/* Search Input Field */}
@@ -89,7 +114,7 @@ export default function TabOneScreen() {
 
       {/* List of Items with Pagination */}
       <FlatList
-        data={data}
+        data={fetchedData?.results || []}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.itemContainer}>
@@ -97,7 +122,10 @@ export default function TabOneScreen() {
               status={selectedItems.includes(item.id) ? 'checked' : 'unchecked'}
               onPress={() => toggleItemSelection(item.id)}
             />
-            <ThemedText style={styles.itemText}>{item.title}</ThemedText>
+            <ThemedText style={styles.itemText} darkColor='darkColor'>{item.tagId}</ThemedText>
+            <ThemedText style={styles.itemText} darkColor='darkColor'>{item.status}</ThemedText>
+            <ThemedText style={styles.itemText} darkColor='darkColor'>{item.gender}</ThemedText>
+            <ThemedText style={styles.itemText} darkColor='darkColor'>{item.animal_breed}</ThemedText>
             <Menu
               visible={menuVisible === item.id}
               onDismiss={closeMenu}
@@ -109,7 +137,12 @@ export default function TabOneScreen() {
                 />
               }>
               <Menu.Item onPress={() => navigateToDetail(item.id)} title="View" />
-              <Menu.Item onPress={() => console.log('Edit', item.title)} title="Edit" />
+              <Menu.Item onPress={() => navigateToMilk(item.id)} title="Milk" />
+              <Menu.Item onPress={() => navigateToList(item.id)} title="Milk List" />
+              <Menu.Item onPress={() => navigateToEditAnimal(item.id)} title="Edit" />
+              <Menu.Item onPress={() => navigateToTreatmentScreen(item.id)} title="Treatment" />
+              <Menu.Item onPress={() => navigateToWeightList(item.id)} title="Weight" />
+                
               <Menu.Item onPress={() => console.log('Delete', item.title)} title="Delete" />
             </Menu>
           </View>
